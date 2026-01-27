@@ -1,0 +1,21 @@
+# Environment variables
+.env
+
+# Maven
+target/
+
+# Logs
+*.log
+log.txt
+log_utf8.txt
+build.log
+compile_error.log
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
