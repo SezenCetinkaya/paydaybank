@@ -1,0 +1,32 @@
+package com.paydaybank.notification_service.service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class EmailSender {
+
+    private final JavaMailSender javaMailSender;
+
+    public void sendEmail(String to, String subject, String text) {
+        log.info("Preparing to send email to: {}", to);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject(subject);
+            message.setText(text);
+            
+            javaMailSender.send(message); 
+            
+            log.info("Email sent successfully. Subject: {}", subject);
+            log.debug("Email Content: {}", text);
+        } catch (Exception e) {
+            log.error("Failed to send email to {}", to, e);
+        }
+    }
+}

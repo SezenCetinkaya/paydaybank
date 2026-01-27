@@ -17,6 +17,12 @@ The system is composed of the following microservices:
     *   Provides user data via internal APIs.
 3.  **PostgreSQL** (`:5432`)
     *   Relational database used by both services.
+4.  **Notification Service** (`:8087`)
+    *   Listens to Kafka events and sends emails.
+5.  **Email Confirmation Service** (`:8088`)
+    *   Handles email verification links.
+6.  **Infrastructure**
+    *   Kafka, Zookeeper, MailHog
 
 ## Tech Stack
 
@@ -28,6 +34,8 @@ The system is composed of the following microservices:
 *   **Docker & Docker Compose** (Containerization & Orchestration)
 *   **Lombok** (Boilerplate code reduction)
 *   **MapStruct** (Object mapping)
+*   **Apache Kafka** (Event Streaming)
+*   **MailHog** (Email Testing)
 *   **JWT** (JSON Web Tokens for Security)
 
 ## Getting Started
@@ -123,4 +131,21 @@ curl -X POST http://localhost:8085/auth/login \
 ```bash
 # Gets user details using the ID identified from DB or response
 curl -X GET http://localhost:8086/users/{USER_UUID_HERE}
+```
+
+### 4. Manual Notification Trigger (Test)
+```bash
+curl -X POST http://localhost:8087/notifications/email-confirmation \
+-H "Content-Type: application/json" \
+-d '{
+    "userId": "11111111-1111-1111-1111-111111111111",
+    "email": "test@example.com",
+    "type": "REGISTRATION"
+}'
+```
+
+### 5. Confirm Email (Test)
+*(Replace UUID with the one received in MailHog at http://localhost:8025)*
+```bash
+curl "http://localhost:8088/confirm?id=aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
 ```
