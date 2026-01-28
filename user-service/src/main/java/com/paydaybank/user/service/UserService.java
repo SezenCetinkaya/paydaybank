@@ -18,6 +18,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
+    private final org.springframework.kafka.core.KafkaTemplate<String, String> kafkaTemplate;
+
     @Transactional
     public UserDTO createUser(UserDTO userDTO) {
         log.info("Creating user with email: {}", userDTO.getEmail());
@@ -37,7 +39,15 @@ public class UserService {
     }
 
     private void publishUserCreatedEvent(User user) {
-        log.info("PUBLISHING EVENT: UserCreatedEvent for userId: {}", user.getId());
+        String message = user.getId() + "," + user.getEmail();
+        log.info("PUBLISHING EVENT: UserCreatedEvent for userId: {} payload: {}", user.getId(), message);
+        kafkaTemplate.send("user-created", message).whenComplete((result, ex) -> {
+            if (ex == null) {
+                log.info("Message sent to Kafka successfully: {}", message);
+            } else {
+                log.error("Failed to send message to Kafka", ex);
+            }
+        });
     }
     
     public UserDTO getUserById(UUID id) {

@@ -23,6 +23,23 @@ public class NotificationService {
     private String confirmationBaseUrl;
 
     public void sendRegistrationConfirmation(UUID userId, String email) {
+        // Check if there is an existing confirmation for this user
+        emailConfirmationRepository.findTopByUserIdOrderByCreatedAtDesc(userId).ifPresent(existing -> {
+            if (isValid(existing)) {
+                log.info("A valid registration confirmation already exists for userId: {}. Skipping email.", userId);
+                return;
+            }
+        });
+
+        boolean alreadyExists = emailConfirmationRepository.findTopByUserIdOrderByCreatedAtDesc(userId)
+                .map(this::isValid)
+                .orElse(false);
+
+        if (alreadyExists) {
+             log.info("Skipping registration email for userId: {} (Already sent/confirmed)", userId);
+             return;
+        }
+
         RegistrationConfirmation confirmation = RegistrationConfirmation.builder()
                 .userId(userId)
                 .notificationStatus(EmailConfirmation.NotificationStatus.SENT)
@@ -32,6 +49,17 @@ public class NotificationService {
     }
 
     public void sendAccountConfirmation(UUID userId, UUID accountId, String email) {
+        // Check if there is an existing confirmation for this account
+        boolean alreadyExists = emailConfirmationRepository.findLatestByAccountId(accountId).stream()
+                .findFirst()
+                .map(this::isValid)
+                .orElse(false);
+
+        if (alreadyExists) {
+            log.info("Skipping account email for accountId: {} (Already sent/confirmed)", accountId);
+            return;
+        }
+
         AccountConfirmation confirmation = AccountConfirmation.builder()
                 .userId(userId)
                 .accountId(accountId)
@@ -41,14 +69,24 @@ public class NotificationService {
         saveAndSend(confirmation, email, "Confirm Your New Account");
     }
 
+    private boolean isValid(EmailConfirmation confirmation) {
+        return confirmation.getNotificationStatus() == EmailConfirmation.NotificationStatus.SENT ||
+               confirmation.getNotificationStatus() == EmailConfirmation.NotificationStatus.CONFIRMED;
+    }
+
     private void saveAndSend(EmailConfirmation confirmation, String email, String subject) {
         EmailConfirmation saved = emailConfirmationRepository.save(confirmation);
         String link = confirmationBaseUrl + "?id=" + saved.getId();
         
         String body = "Please click the link to confirm: " + link;
         
-        emailSender.sendEmail(email, subject, body);
-        
-        log.info("Notification process completed for confirmation ID: {}", saved.getId());
+        try {
+            emailSender.sendEmail(email, subject, body);
+            log.info("Notification sent successfully for confirmation ID: {}", saved.getId());
+        } catch (Exception e) {
+            log.error("Failed to send email for confirmation ID: {}. Marking as FAILED.", saved.getId());
+            saved.setNotificationStatus(EmailConfirmation.NotificationStatus.FAILED);
+            emailConfirmationRepository.save(saved);
+        }
     }
 }

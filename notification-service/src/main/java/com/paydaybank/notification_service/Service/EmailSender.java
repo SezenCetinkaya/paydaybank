@@ -27,6 +27,7 @@ public class EmailSender {
             log.debug("Email Content: {}", text);
         } catch (Exception e) {
             log.error("Failed to send email to {}", to, e);
+            throw new RuntimeException("Failed to send email", e);
         }
     }
 }

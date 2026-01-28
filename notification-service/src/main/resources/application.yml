@@ -3,7 +3,7 @@ server:
 
 spring:
   mail:
-    host: mailhog
+    host: ${MAIL_HOST:localhost}
     port: 1025
     username: ""
     password: ""
