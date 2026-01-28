@@ -125,6 +125,24 @@ services:
     networks:
       - paydaybank-network
 
+  account-service:
+    build: ./account-service
+    container_name: account-service
+    ports:
+      - "8089:8089"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      AUTH_SERVICE_URL: http://auth-service:8085
+      SERVER_PORT: 8089
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      - postgres
+      - kafka
+    networks:
+      - paydaybank-network
+
 volumes:
   postgres-data:
 
