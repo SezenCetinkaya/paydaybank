@@ -17,7 +17,7 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<Void> signup(@RequestBody SignupRequest request) {
+    public ResponseEntity<Void> signup(@RequestBody @jakarta.validation.Valid SignupRequest request) {
         authService.signup(request);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }

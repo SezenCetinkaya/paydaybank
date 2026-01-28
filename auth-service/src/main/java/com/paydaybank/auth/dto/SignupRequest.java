@@ -13,6 +13,8 @@ import java.time.LocalDate;
 @Builder
 public class SignupRequest {
     private String email;
+
+    @jakarta.validation.constraints.Pattern(regexp = "^[a-zA-Z0-9]{6,}$", message = "Password must be at least 6 characters long and contain only alphanumeric characters.")
     private String password;
     private String firstName;
     private String lastName;
