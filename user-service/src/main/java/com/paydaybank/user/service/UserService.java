@@ -1,5 +1,6 @@
 package com.paydaybank.user.service;
 
+import com.paydaybank.user.dto.UserCreatedEvent;
 import com.paydaybank.user.dto.UserDTO;
 import com.paydaybank.user.entity.User;
 import com.paydaybank.user.mapper.UserMapper;
@@ -18,7 +19,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    private final org.springframework.kafka.core.KafkaTemplate<String, String> kafkaTemplate;
+    private final org.springframework.kafka.core.KafkaTemplate<String, Object> kafkaTemplate;
 
     @Transactional
     public UserDTO createUser(UserDTO userDTO) {
@@ -39,13 +40,13 @@ public class UserService {
     }
 
     private void publishUserCreatedEvent(User user) {
-        String message = user.getId() + "," + user.getEmail();
-        log.info("PUBLISHING EVENT: UserCreatedEvent for userId: {} payload: {}", user.getId(), message);
-        kafkaTemplate.send("user-created", message).whenComplete((result, ex) -> {
+        UserCreatedEvent event = new UserCreatedEvent(user.getId(), user.getEmail());
+        log.info("PUBLISHING EVENT: UserCreatedEvent for userId: {}, email: {}", user.getId(), user.getEmail());
+        kafkaTemplate.send("user-created", event).whenComplete((result, ex) -> {
             if (ex == null) {
-                log.info("Message sent to Kafka successfully: {}", message);
+                log.info("UserCreatedEvent sent to Kafka successfully for userId: {}", user.getId());
             } else {
-                log.error("Failed to send message to Kafka", ex);
+                log.error("Failed to send UserCreatedEvent to Kafka for userId: {}", user.getId(), ex);
             }
         });
     }

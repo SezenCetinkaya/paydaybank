@@ -1,5 +1,7 @@
 package com.paydaybank.notification_service.kafka;
 
+import com.paydaybank.notification_service.dto.AccountOpenedEvent;
+import com.paydaybank.notification_service.dto.UserCreatedEvent;
 import com.paydaybank.notification_service.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,36 +16,28 @@ public class NotificationListener {
     private final NotificationService notificationService;
     
     @KafkaListener(topics = "user-created", groupId = "notification-group")
-    public void handleUserCreated(String message) {
-        log.info("Received user-created event: {}", message);
-        // Protocol: userId,email
-        // Simple parsing for demonstration. Realworld would use a DTO.
+    public void handleUserCreated(UserCreatedEvent event) {
+        log.info("Received user-created event: userId={}, email={}", event.getUserId(), event.getEmail());
         try {
-            String[] parts = message.split(",");
-            if (parts.length >= 2) {
-                java.util.UUID userId = java.util.UUID.fromString(parts[0].trim());
-                String email = parts[1].trim();
-                notificationService.sendRegistrationConfirmation(userId, email);
-            }
+            notificationService.sendRegistrationConfirmation(event.getUserId(), event.getEmail());
         } catch (Exception e) {
-            log.error("Error processing user-created event", e);
+            log.error("Error processing user-created event for userId: {}", event.getUserId(), e);
         }
     }
 
     @KafkaListener(topics = "account-opened", groupId = "notification-group")
-    public void handleAccountOpened(String message) {
-        log.info("Received account-opened event: {}", message);
-        // Protocol: userId,accountId,email
+    public void handleAccountOpened(AccountOpenedEvent event) {
+        log.info("Received account-opened event: userId={}, accountId={}, email={}", 
+            event.getUserId(), event.getAccountId(), event.getEmail());
         try {
-            String[] parts = message.split(",");
-            if (parts.length >= 3) {
-                java.util.UUID userId = java.util.UUID.fromString(parts[0].trim());
-                java.util.UUID accountId = java.util.UUID.fromString(parts[1].trim());
-                String email = parts[2].trim();
-                notificationService.sendAccountConfirmation(userId, accountId, email);
-            }
+            notificationService.sendAccountConfirmation(
+                event.getUserId(), 
+                event.getAccountId(), 
+                event.getEmail()
+            );
         } catch (Exception e) {
-            log.error("Error processing account-opened event", e);
+            log.error("Error processing account-opened event for userId: {}, accountId: {}", 
+                event.getUserId(), event.getAccountId(), e);
         }
     }
 }
