@@ -1,0 +1,27 @@
+package com.paydaybank.account_service.controller;
+
+import com.paydaybank.account_service.dto.AccountCreateRequest;
+import com.paydaybank.account_service.dto.AccountDTO;
+import com.paydaybank.account_service.service.AccountService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/accounts")
+@RequiredArgsConstructor
+public class AccountController {
+
+    private final AccountService accountService;
+
+    @PostMapping
+    public ResponseEntity<AccountDTO> createAccount(@RequestBody @Valid AccountCreateRequest request,
+                                                    @AuthenticationPrincipal UUID userId) {
+        return new ResponseEntity<>(accountService.createAccount(userId, request), HttpStatus.CREATED);
+    }
+}

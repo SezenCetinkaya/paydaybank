@@ -137,6 +137,8 @@ services:
       AUTH_SERVICE_URL: http://auth-service:8085
       SERVER_PORT: 8089
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
     depends_on:
       - postgres
       - kafka
