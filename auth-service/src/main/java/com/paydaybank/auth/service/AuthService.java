@@ -58,7 +58,7 @@ public class AuthService {
             if (passwordEncoder.matches(request.getPassword(), auth.getPasswordHash())) {
                 auth.setLastLoginAt(ZonedDateTime.now());
                 authRepository.save(auth);
-                String token = jwtUtil.generateToken(auth.getEmail());
+                String token = jwtUtil.generateToken(auth.getEmail(), auth.getUserId());
                 return AuthDTO.builder()
                         .token(token)
                         .userId(auth.getUserId())
