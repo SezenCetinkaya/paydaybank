@@ -13,6 +13,14 @@ public class EmailSender {
 
     private final JavaMailSender javaMailSender;
 
+    @org.springframework.beans.factory.annotation.Value("${spring.mail.host}")
+    private String mailHost;
+
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        log.info("EmailSender initialized with host: {}", mailHost);
+    }
+
     public void sendEmail(String to, String subject, String text) {
         log.info("Preparing to send email to: {}", to);
         try {

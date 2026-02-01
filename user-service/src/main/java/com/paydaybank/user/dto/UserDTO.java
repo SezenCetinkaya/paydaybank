@@ -27,8 +27,8 @@ public class UserDTO {
     @NotBlank(message = "Last name is required")
     private String lastName;
 
-    @Email(message = "Email should be valid")
     @NotBlank(message = "Email is required")
+    @Email(message = "Email should be valid")   
     private String email;
 
     private String phoneNumber;
