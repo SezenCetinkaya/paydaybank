@@ -11,5 +11,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class AccountCreatedEvent {
     private UUID userId;
+    private UUID accountId;
+    private String email;
     private String accountNumber;
 }

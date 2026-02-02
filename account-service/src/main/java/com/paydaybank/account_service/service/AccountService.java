@@ -21,10 +21,12 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
+
     private final org.springframework.kafka.core.KafkaTemplate<String, Object> kafkaTemplate;
 
+
     @Transactional
-    public AccountDTO createAccount(UUID userId, AccountCreateRequest request) {
+    public AccountDTO createAccount(UUID userId, AccountCreateRequest request, String email) {
         log.info("Creating account for userId: {}", userId);
 
         String accountNumber = UUID.randomUUID().toString();
@@ -39,7 +41,7 @@ public class AccountService {
 
         account = accountRepository.save(account);
 
-        //publishAccountCreatedEvent(account);
+        publishAccountCreatedEvent(account, email);
 
         return accountMapper.toDTO(account);
     }
@@ -50,10 +52,10 @@ public class AccountService {
                 .orElse(false);
     }
 
-    private void publishAccountCreatedEvent(Account account) {
-        AccountCreatedEvent event = new AccountCreatedEvent(account.getId(), account.getAccountNumber());
+    private void publishAccountCreatedEvent(Account account, String email) {
+        AccountCreatedEvent event = new AccountCreatedEvent(account.getUserId(), account.getId(), email, account.getAccountNumber());
         log.info("PUBLISHING EVENT: AccountCreatedEvent for accountId: {}, accountNumber: {}", account.getId(), account.getAccountNumber());
-        kafkaTemplate.send("account-created", event).whenComplete((result, ex) -> {
+        kafkaTemplate.send("account-opened", event).whenComplete((result, ex) -> {
             if (ex == null) {
                 log.info("AccountCreatedEvent sent to Kafka successfully for accountId: {}", account.getId());
             } else {

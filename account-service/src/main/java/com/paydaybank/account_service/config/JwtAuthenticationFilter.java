@@ -48,11 +48,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .getBody();
 
             String userIdString = claims.get("userId", String.class);
+            String email = claims.getSubject();
+
             if (userIdString != null) {
                 UUID userId = UUID.fromString(userIdString);
+                com.paydaybank.account_service.security.CustomPrincipal principal = 
+                    new com.paydaybank.account_service.security.CustomPrincipal(userId, email);
                 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userId, null, Collections.emptyList());
+                        principal, null, Collections.emptyList());
                 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);

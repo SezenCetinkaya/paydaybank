@@ -36,7 +36,7 @@ spring:
       properties:
         spring.json.trusted.packages: "com.paydaybank.*"
         #spring.json.use.type.headers: true
-        spring.json.type.mapping: "com.paydaybank.user.dto.UserCreatedEvent:com.paydaybank.notification_service.dto.UserCreatedEvent,com.paydaybank.account_service.dto.AccountOpenedEvent:com.paydaybank.notification_service.dto.AccountOpenedEvent"
+        spring.json.type.mapping: "com.paydaybank.user.dto.UserCreatedEvent:com.paydaybank.notification_service.dto.UserCreatedEvent,com.paydaybank.account_service.dto.AccountCreatedEvent:com.paydaybank.notification_service.dto.AccountOpenedEvent"
 
 application:
   config:

@@ -21,7 +21,7 @@ public class AccountController {
 
     @PostMapping
     public ResponseEntity<AccountDTO> createAccount(@RequestBody @Valid AccountCreateRequest request,
-                                                    @AuthenticationPrincipal UUID userId) {
-        return new ResponseEntity<>(accountService.createAccount(userId, request), HttpStatus.CREATED);
+                                                    @AuthenticationPrincipal com.paydaybank.account_service.security.CustomPrincipal principal) {
+        return new ResponseEntity<>(accountService.createAccount(principal.getId(), request, principal.getEmail()), HttpStatus.CREATED);
     }
 }

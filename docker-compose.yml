@@ -101,6 +101,8 @@ services:
       - "8087:8087"
       - "5005:5005"
     environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SERVICE_MAIL_HOST: mailhog
       JAVA_TOOL_OPTIONS: >
         -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
@@ -109,7 +111,6 @@ services:
       AUTH_SERVICE_URL: http://auth-service:8085
       SERVER_PORT: 8087
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      SERVICE_MAIL_HOST: mailhog
     depends_on:
       - postgres
       - kafka
