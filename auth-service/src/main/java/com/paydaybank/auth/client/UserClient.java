@@ -14,7 +14,7 @@ import java.util.UUID;
 @FeignClient(name = "user-service", url = "${application.config.user-service-url}")
 public interface UserClient {
 
-    @PostMapping("/users")
+    @PostMapping("/internal/users")
     UserDTO createUser(@RequestBody UserDTO userDTO);
 
     @Data
