@@ -10,4 +10,6 @@ public class EmailConfirmationRequest {
     private UUID accountId; 
     private String email;
     private String type; 
+    private String accountNumber;
+    private String accountType;
 }

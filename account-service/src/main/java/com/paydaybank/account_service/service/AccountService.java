@@ -69,7 +69,7 @@ public class AccountService {
     }
 
     private void publishAccountCreatedEvent(Account account, String email) {
-        AccountCreatedEvent event = new AccountCreatedEvent(account.getUserId(), account.getId(), email, account.getAccountNumber());
+        AccountCreatedEvent event = new AccountCreatedEvent(account.getUserId(), account.getId(), email, account.getAccountNumber(), account.getAccountType());
         log.info("PUBLISHING EVENT: AccountCreatedEvent for accountId: {}, accountNumber: {}", account.getId(), account.getAccountNumber());
         kafkaTemplate.send("account-opened", event).whenComplete((result, ex) -> {
             if (ex == null) {

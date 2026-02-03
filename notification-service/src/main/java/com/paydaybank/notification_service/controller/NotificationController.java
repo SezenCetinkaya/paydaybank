@@ -16,7 +16,13 @@ public class NotificationController {
     @PostMapping("/email-confirmation")
     public ResponseEntity<String> sendEmailConfirmation(@RequestBody EmailConfirmationRequest request) {
         if ("ACCOUNT".equalsIgnoreCase(request.getType())) {
-            notificationService.sendAccountConfirmation(request.getUserId(), request.getAccountId(), request.getEmail());
+            notificationService.sendAccountConfirmation(
+                request.getUserId(), 
+                request.getAccountId(), 
+                request.getEmail(),
+                request.getAccountNumber(),
+                request.getAccountType()
+            );
         } else {
             notificationService.sendRegistrationConfirmation(request.getUserId(), request.getEmail());
         }

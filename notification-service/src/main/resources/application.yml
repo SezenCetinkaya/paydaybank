@@ -18,7 +18,7 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/paydaybank}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:Sezen.06}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -41,3 +41,4 @@ spring:
 application:
   config:
     auth-service-url: ${AUTH_SERVICE_URL:http://localhost:8085}
+    user-service-url: ${USER_SERVICE_URL:http://user-service:8086}

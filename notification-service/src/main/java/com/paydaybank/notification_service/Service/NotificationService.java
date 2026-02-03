@@ -1,5 +1,6 @@
 package com.paydaybank.notification_service.service;
 
+import com.paydaybank.notification_service.client.UserClient;
 import com.paydaybank.notification_service.entity.AccountConfirmation;
 import com.paydaybank.notification_service.entity.EmailConfirmation;
 import com.paydaybank.notification_service.entity.RegistrationConfirmation;
@@ -18,6 +19,7 @@ public class NotificationService {
 
     private final EmailConfirmationRepository emailConfirmationRepository;
     private final EmailSender emailSender;
+    private final UserClient userClient;
 
     @Value("${email-confirmation.base-url:http://localhost:8088/confirm}")
     private String confirmationBaseUrl;
@@ -45,10 +47,10 @@ public class NotificationService {
                 .notificationStatus(EmailConfirmation.NotificationStatus.SENT)
                 .build();
         
-        saveAndSend(confirmation, email, "Welcome to Payday Bank - Confirm Registration");
+        saveAndSend(confirmation, email, "Welcome to Payday Bank - Confirm Registration", userId, "registration");
     }
 
-    public void sendAccountConfirmation(UUID userId, UUID accountId, String email) {
+    public void sendAccountConfirmation(UUID userId, UUID accountId, String email, String accountNumber, String accountType) {
         // Check if there is an existing confirmation for this account
         boolean alreadyExists = emailConfirmationRepository.findLatestByAccountId(accountId).stream()
                 .findFirst()
@@ -66,7 +68,7 @@ public class NotificationService {
                 .notificationStatus(EmailConfirmation.NotificationStatus.SENT)
                 .build();
 
-        saveAndSend(confirmation, email, "Confirm Your New Account");
+        saveAndSend(confirmation, email, "Confirm Your New Account", userId, "account opening", accountNumber, accountType);
     }
 
     private boolean isValid(EmailConfirmation confirmation) {
@@ -74,14 +76,44 @@ public class NotificationService {
                confirmation.getNotificationStatus() == EmailConfirmation.NotificationStatus.CONFIRMED;
     }
 
-    private void saveAndSend(EmailConfirmation confirmation, String email, String subject) {
+    private void saveAndSend(EmailConfirmation confirmation, String email, String subject, UUID userId, String detailsType) {
+        saveAndSend(confirmation, email, subject, userId, detailsType, null, null);
+    }
+
+    private void saveAndSend(EmailConfirmation confirmation, String email, String subject, UUID userId, String detailsType, String accountNumber, String accountType) {
         EmailConfirmation saved = emailConfirmationRepository.save(confirmation);
         String link = confirmationBaseUrl + "?id=" + saved.getId();
         
-        String body = "Please click the link to confirm: " + link;
+        StringBuilder body = new StringBuilder();
+        try {
+            UserClient.UserResponse user = userClient.getUserById(userId);
+            if (user != null) {
+                body.append(String.format("Dear %s %s,\n\n", user.getFirstName(), user.getLastName()));
+                body.append(String.format("Your %s details are as follows:\n", detailsType));
+                body.append(String.format("- Full Name: %s %s\n", user.getFirstName(), user.getLastName()));
+                body.append(String.format("- Gender: %s\n", user.getGender()));
+                body.append(String.format("- Date of Birth: %s\n", user.getDateOfBirth()));
+                body.append(String.format("- Phone Number: %s\n", user.getPhoneNumber()));
+                body.append(String.format("- Email: %s\n", user.getEmail()));
+            } else {
+                body.append("Dear Customer,\n\n");
+            }
+        } catch (Exception e) {
+            log.warn("Failed to fetch user details for userId: {}. Proceeding with generic email.", userId, e);
+            body.append("Dear Customer,\n\n");
+        }
+
+        if (accountNumber != null && accountType != null) {
+            body.append("\nAccount Details:\n");
+            body.append(String.format("- Account Number: %s\n", accountNumber));
+            body.append(String.format("- Account Type: %s\n", accountType));
+        }
+
+        body.append("\nPlease click the link to confirm: ").append(link);
+        body.append("\n\nBest regards,\nPayday Bank Team");
         
         try {
-            emailSender.sendEmail(email, subject, body);
+            emailSender.sendEmail(email, subject, body.toString());
             log.info("Notification sent successfully for confirmation ID: {}", saved.getId());
         } catch (Exception e) {
             log.error("Failed to send email for confirmation ID: {}. Marking as FAILED.", saved.getId());

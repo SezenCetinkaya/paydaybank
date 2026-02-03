@@ -13,4 +13,6 @@ public class AccountOpenedEvent {
     private UUID userId;
     private UUID accountId;
     private String email;
+    private String accountNumber;
+    private String accountType;
 }

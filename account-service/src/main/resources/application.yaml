@@ -4,7 +4,7 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/paydaybank}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -30,4 +30,4 @@ server:
   port: ${SERVER_PORT:8089}
 
 jwt:
-  secret: ${JWT_SECRET:cGF5ZGF5YmFuay1zZWNyZXQta2V5LTEyMzQ1Njc4OTAxMjM0NTY3ODkw}
+  secret: ${JWT_SECRET}

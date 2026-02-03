@@ -33,7 +33,9 @@ public class NotificationListener {
             notificationService.sendAccountConfirmation(
                 event.getUserId(), 
                 event.getAccountId(), 
-                event.getEmail()
+                event.getEmail(),
+                event.getAccountNumber(),
+                event.getAccountType()
             );
         } catch (Exception e) {
             log.error("Error processing account-opened event for userId: {}, accountId: {}", 

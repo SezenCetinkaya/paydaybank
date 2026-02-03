@@ -1,5 +1,6 @@
 package com.paydaybank.account_service.dto;
 
+import com.paydaybank.account_service.entity.Account;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,4 +15,5 @@ public class AccountCreatedEvent {
     private UUID accountId;
     private String email;
     private String accountNumber;
+    private Account.AccountType accountType;
 }
