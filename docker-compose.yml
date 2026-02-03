@@ -152,6 +152,7 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION}
+      APPLICATION_CONFIG_TRANSACTION_URL: http://transaction-service:8090
     depends_on:
       - postgres
       - kafka

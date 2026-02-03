@@ -1,18 +1,23 @@
 package com.paydaybank.account_service.service;
 
+import com.paydaybank.account_service.client.TransactionClient;
 import com.paydaybank.account_service.dto.AccountCreateRequest;
 import com.paydaybank.account_service.dto.AccountCreatedEvent;
 import com.paydaybank.account_service.dto.AccountDTO;
+import com.paydaybank.account_service.dto.TransactionDTO;
 import com.paydaybank.account_service.entity.Account;
 import com.paydaybank.account_service.mapper.AccountMapper;
 import com.paydaybank.account_service.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +27,8 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
 
-    private final org.springframework.kafka.core.KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final TransactionClient transactionClient;
 
 
     @Transactional
@@ -46,10 +52,14 @@ public class AccountService {
         return accountMapper.toDTO(account);
     }
 
-    public java.util.List<AccountDTO> getAccountsByUserId(UUID userId) {
+    public List<AccountDTO> getAccountsByUserId(UUID userId) {
         return accountRepository.findAllByUserId(userId).stream()
                 .map(accountMapper::toDTO)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
+    }
+
+    public List<TransactionDTO> getTransactionsByAccountId(UUID accountId) {
+        return transactionClient.getTransactionsByAccountId(accountId);
     }
 
     public boolean validateAccountOwnership(UUID accountId, UUID userId) {
