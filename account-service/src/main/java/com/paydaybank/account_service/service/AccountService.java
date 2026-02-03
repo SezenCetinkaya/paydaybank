@@ -46,6 +46,12 @@ public class AccountService {
         return accountMapper.toDTO(account);
     }
 
+    public java.util.List<AccountDTO> getAccountsByUserId(UUID userId) {
+        return accountRepository.findAllByUserId(userId).stream()
+                .map(accountMapper::toDTO)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     public boolean validateAccountOwnership(UUID accountId, UUID userId) {
         return accountRepository.findById(accountId)
                 .map(account -> account.getUserId().equals(userId))

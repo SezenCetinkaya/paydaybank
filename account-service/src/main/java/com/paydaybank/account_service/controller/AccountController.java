@@ -24,4 +24,9 @@ public class AccountController {
                                                     @AuthenticationPrincipal com.paydaybank.account_service.security.CustomPrincipal principal) {
         return new ResponseEntity<>(accountService.createAccount(principal.getId(), request, principal.getEmail()), HttpStatus.CREATED);
     }
+
+    @GetMapping
+    public ResponseEntity<java.util.List<AccountDTO>> getAccounts(@RequestParam("userId") UUID userId) {
+        return ResponseEntity.ok(accountService.getAccountsByUserId(userId));
+    }
 }
