@@ -26,20 +26,13 @@ public class NotificationService {
 
     public void sendRegistrationConfirmation(UUID userId, String email) {
         // Check if there is an existing confirmation for this user
-        emailConfirmationRepository.findTopByUserIdOrderByCreatedAtDesc(userId).ifPresent(existing -> {
-            if (isValid(existing)) {
-                log.info("A valid registration confirmation already exists for userId: {}. Skipping email.", userId);
-                return;
-            }
-        });
-
-        boolean alreadyExists = emailConfirmationRepository.findTopByUserIdOrderByCreatedAtDesc(userId)
+        boolean exists = emailConfirmationRepository.findTopByUserIdOrderByCreatedAtDesc(userId)
                 .map(this::isValid)
                 .orElse(false);
 
-        if (alreadyExists) {
-             log.info("Skipping registration email for userId: {} (Already sent/confirmed)", userId);
-             return;
+        if (exists) {
+            log.info("A valid registration confirmation already exists for userId: {}. Skipping email.", userId);
+            return;
         }
 
         RegistrationConfirmation confirmation = RegistrationConfirmation.builder()

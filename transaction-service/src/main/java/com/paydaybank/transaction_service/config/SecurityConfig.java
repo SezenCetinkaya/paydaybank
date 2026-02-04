@@ -19,7 +19,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/internal/**").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll() // Allow all requests - gateway handles auth
                 );
 
         return http.build();

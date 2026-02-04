@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,12 +22,13 @@ public class AccountController {
 
     @PostMapping
     public ResponseEntity<AccountDTO> createAccount(@RequestBody @Valid AccountCreateRequest request,
-                                                    @AuthenticationPrincipal com.paydaybank.account_service.security.CustomPrincipal principal) {
-        return new ResponseEntity<>(accountService.createAccount(principal.getId(), request, principal.getEmail()), HttpStatus.CREATED);
+                                                    @RequestHeader("X-User-Id") UUID userId,
+                                                    @RequestHeader("X-User-Email") String email) {
+        return new ResponseEntity<>(accountService.createAccount(userId, request, email), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<AccountDTO>> getAccounts(@RequestParam("userId") UUID userId) {
+    public ResponseEntity<List<AccountDTO>> getAccounts(@RequestHeader("X-User-Id") UUID userId) {
         return ResponseEntity.ok(accountService.getAccountsByUserId(userId));
     }
 
