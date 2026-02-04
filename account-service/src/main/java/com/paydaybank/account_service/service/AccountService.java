@@ -53,7 +53,7 @@ public class AccountService {
     }
 
     public List<AccountDTO> getAccountsByUserId(UUID userId) {
-        return accountRepository.findAllByUserId(userId).stream()
+        return accountRepository.findAllByUserIdAndStatus(userId, Account.AccountStatus.ACTIVE).stream()
                 .map(accountMapper::toDTO)
                 .collect(Collectors.toList());
     }
