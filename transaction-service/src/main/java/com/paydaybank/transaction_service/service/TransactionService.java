@@ -38,7 +38,7 @@ public class TransactionService {
     }
 
     public List<TransactionDTO> getTransactionsByAccountId(UUID accountId) {
-        return transactionRepository.findAllByAccountId(accountId).stream()
+        return transactionRepository.findAllByAccountIdOrderByCreatedAtDesc(accountId).stream()
                 .map(transactionMapper::toDTO)
                 .toList();
     }
