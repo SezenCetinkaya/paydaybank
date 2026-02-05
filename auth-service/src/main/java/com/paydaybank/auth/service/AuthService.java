@@ -28,6 +28,9 @@ public class AuthService {
     private com.paydaybank.auth.client.UserClient userClient;
 
     public void signup(com.paydaybank.auth.dto.SignupRequest request) {
+        if (request.getPassword() == null || request.getPassword().length() < 6) {
+            throw new RuntimeException("Password must be at least 6 characters long");
+        }
         // userDTO for user service
         com.paydaybank.auth.client.UserClient.UserDTO userDTO = com.paydaybank.auth.client.UserClient.UserDTO.builder()
                 .email(request.getEmail())

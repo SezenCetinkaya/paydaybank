@@ -1,9 +1,10 @@
 package com.paydaybank.api_gateway.filter;
 
+import com.paydaybank.api_gateway.util.JwtValidator;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -15,7 +16,6 @@ import reactor.core.publisher.Mono;
 /**
  * GlobalFilter that extracts userId and email claims from JWT tokens
  * and forwards them as HTTP headers (X-User-Id, X-User-Email) to downstream services.
- * Extracts claims for forwarding to downstream services.
  */
 @Component
 public class JwtClaimExtractorFilter implements GlobalFilter, Ordered {
@@ -25,6 +25,9 @@ public class JwtClaimExtractorFilter implements GlobalFilter, Ordered {
     private static final String BEARER_PREFIX = "Bearer ";
     private static final String USER_ID_HEADER = "X-User-Id";
     private static final String USER_EMAIL_HEADER = "X-User-Email";
+
+    @Autowired
+    private JwtValidator jwtValidator;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -42,14 +45,8 @@ public class JwtClaimExtractorFilter implements GlobalFilter, Ordered {
         String token = authHeader.substring(BEARER_PREFIX.length());
         
         try {
-            // Parse JWT without signature validation
-            // Split the token to remove the signature part and parse only header + payload
-            String unsignedToken = getUnsignedToken(token);
-            
-            Claims claims = Jwts.parserBuilder()
-                    .build()
-                    .parseClaimsJwt(unsignedToken)
-                    .getBody();
+            // Validate token and get claims using JwtValidator
+            Claims claims = jwtValidator.validate(token);
             
             // Extract userId and email
             String userId = claims.get("userId", String.class);
@@ -67,23 +64,10 @@ public class JwtClaimExtractorFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange.mutate().request(mutatedRequest).build());
             
         } catch (Exception e) {
-            logger.warn("Failed to extract claims from JWT: {}", e.getMessage());
-            // On error, pass through without adding headers
+            logger.warn("Failed to validate JWT or extract claims: {}", e.getMessage());
+            // On error, pass through or we could return 401 Unauthorized here
             return chain.filter(exchange);
         }
-    }
-    
-    /**
-     * Removes the signature part from JWT to allow parsing without validation.
-     * JWT structure: header.payload.signature
-     * Keeps: header.payload
-     */
-    private String getUnsignedToken(String token) {
-        int lastDotIndex = token.lastIndexOf('.');
-        if (lastDotIndex > 0) {
-            return token.substring(0, lastDotIndex + 1);
-        }
-        return token + ".";
     }
 
     @Override

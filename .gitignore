@@ -19,3 +19,9 @@ compile_error.log
 # OS
 .DS_Store
 Thumbs.db
+
+# Tests
+**/src/test/
+test_results.txt
+test-output.log
+compile_log.txt
