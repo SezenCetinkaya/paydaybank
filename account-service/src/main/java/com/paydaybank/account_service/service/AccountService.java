@@ -58,7 +58,11 @@ public class AccountService {
                 .collect(Collectors.toList());
     }
 
-    public List<TransactionDTO> getTransactionsByAccountId(UUID accountId) {
+    public List<TransactionDTO> getTransactionsByAccountId(UUID accountId, UUID userId) {
+        if (!validateAccountOwnership(accountId, userId)) {
+            log.warn("Access denied: User {} tried to access transactions for account {}", userId, accountId);
+            throw new RuntimeException("Access denied: You do not own this account");
+        }
         return transactionClient.getTransactionsByAccountId(accountId);
     }
 

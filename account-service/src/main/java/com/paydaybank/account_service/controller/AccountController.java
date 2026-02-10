@@ -33,7 +33,8 @@ public class AccountController {
     }
 
     @GetMapping("/{accountId}/transactions")
-    public ResponseEntity<List<TransactionDTO>> getTransactions(@PathVariable UUID accountId) {
-        return ResponseEntity.ok(accountService.getTransactionsByAccountId(accountId));
+    public ResponseEntity<List<TransactionDTO>> getTransactions(@PathVariable UUID accountId,
+                                                                @RequestHeader("X-User-Id") UUID userId) {
+        return ResponseEntity.ok(accountService.getTransactionsByAccountId(accountId, userId));
     }
 }

@@ -33,15 +33,23 @@ public class JwtClaimExtractorFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         
-        // Extract Authorization header
-        String authHeader = request.getHeaders().getFirst(AUTHORIZATION_HEADER);
+        // 1. Pre-emptively remove identity headers to prevent spoofing
+        ServerHttpRequest cleanedRequest = request.mutate()
+                .headers(httpHeaders -> {
+                    httpHeaders.remove(USER_ID_HEADER);
+                    httpHeaders.remove(USER_EMAIL_HEADER);
+                })
+                .build();
         
-        // If no Authorization header or doesn't start with "Bearer ", pass through
+        // 2. Extract Authorization header
+        String authHeader = cleanedRequest.getHeaders().getFirst(AUTHORIZATION_HEADER);
+        
+        // If no Authorization header or doesn't start with "Bearer ", pass through with cleaned request
         if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
-            return chain.filter(exchange);
+            return chain.filter(exchange.mutate().request(cleanedRequest).build());
         }
         
-        // Extract token
+        // 3. Extract token
         String token = authHeader.substring(BEARER_PREFIX.length());
         
         try {
@@ -49,12 +57,20 @@ public class JwtClaimExtractorFilter implements GlobalFilter, Ordered {
             Claims claims = jwtValidator.validate(token);
             
             // Extract userId and email
-            String userId = claims.get("userId", String.class);
+            Object userIdObj = claims.get("userId");
+            String userId = userIdObj != null ? userIdObj.toString() : null;
             String email = claims.getSubject();
             
-            // Create mutated request with new headers
-            ServerHttpRequest mutatedRequest = request.mutate()
-                    .header(USER_ID_HEADER, userId != null ? userId : "")
+            // 4. Handle valid token but missing essential claim
+            if (userId == null || userId.isEmpty()) {
+                logger.warn("JWT is valid but userId claim is missing");
+                exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+                return exchange.getResponse().setComplete();
+            }
+
+            // 5. Create mutated request with extracted headers
+            ServerHttpRequest mutatedRequest = cleanedRequest.mutate()
+                    .header(USER_ID_HEADER, userId)
                     .header(USER_EMAIL_HEADER, email != null ? email : "")
                     .build();
             
@@ -65,8 +81,9 @@ public class JwtClaimExtractorFilter implements GlobalFilter, Ordered {
             
         } catch (Exception e) {
             logger.warn("Failed to validate JWT or extract claims: {}", e.getMessage());
-            // On error, pass through or we could return 401 Unauthorized here
-            return chain.filter(exchange);
+            // 6. If a token was provided but is invalid, return 401 Unauthorized
+            exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
         }
     }
 

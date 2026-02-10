@@ -11,7 +11,7 @@ import java.util.UUID;
 @FeignClient(name = "user-service", url = "${application.config.user-service-url:http://user-service:8086}")
 public interface UserClient {
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/internal/users/{id}")
     UserResponse getUserById(@PathVariable("id") UUID id);
 
     @Data

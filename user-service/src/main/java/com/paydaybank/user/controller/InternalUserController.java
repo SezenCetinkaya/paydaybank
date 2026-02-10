@@ -19,4 +19,10 @@ public class InternalUserController {
     public ResponseEntity<UserDTO> createUser(@RequestBody @Valid UserDTO userDTO) {
         return new ResponseEntity<>(userService.createUser(userDTO), HttpStatus.CREATED);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable java.util.UUID id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
 }
+

@@ -17,7 +17,11 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable UUID id) {
+    public ResponseEntity<UserDTO> getUserById(@PathVariable UUID id,
+                                               @RequestHeader("X-User-Id") UUID authenticatedUserId) {
+        if (!id.equals(authenticatedUserId)) {
+            throw new RuntimeException("Access denied: You can only view your own profile");
+        }
         return ResponseEntity.ok(userService.getUserById(id));
     }
 }
