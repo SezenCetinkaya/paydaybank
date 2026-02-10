@@ -24,5 +24,11 @@ public class InternalUserController {
     public ResponseEntity<UserDTO> getUserById(@PathVariable java.util.UUID id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable java.util.UUID id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
 }
 

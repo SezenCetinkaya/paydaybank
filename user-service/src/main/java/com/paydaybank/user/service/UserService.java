@@ -57,4 +57,10 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
     }
 
+    @Transactional
+    public void deleteUser(UUID id) {
+        log.info("Deleting user with id: {}", id);
+        userRepository.deleteById(id);
+    }
+
 }

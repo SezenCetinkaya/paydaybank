@@ -17,6 +17,9 @@ public interface UserClient {
     @PostMapping("/internal/users")
     UserDTO createUser(@RequestBody UserDTO userDTO);
 
+    @org.springframework.web.bind.annotation.DeleteMapping("/internal/users/{id}")
+    void deleteUser(@org.springframework.web.bind.annotation.PathVariable("id") java.util.UUID id);
+
     @Data
     @Builder
     @AllArgsConstructor

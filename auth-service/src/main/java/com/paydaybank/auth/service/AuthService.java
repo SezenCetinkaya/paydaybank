@@ -27,13 +27,13 @@ public class AuthService {
     @Autowired
     private com.paydaybank.auth.client.UserClient userClient;
 
+    @org.springframework.transaction.annotation.Transactional
     public void signup(com.paydaybank.auth.dto.SignupRequest request) {
         if (request.getPassword() == null || request.getPassword().length() < 6) {
             throw new RuntimeException("Password must be at least 6 characters long");
         }
         // userDTO for user service
         com.paydaybank.auth.client.UserClient.UserDTO userDTO = com.paydaybank.auth.client.UserClient.UserDTO.builder()
-                .email(request.getEmail())
                 .email(request.getEmail())
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -44,13 +44,21 @@ public class AuthService {
         
         com.paydaybank.auth.client.UserClient.UserDTO createdUser = userClient.createUser(userDTO);
         
-        // authDTO for auth service
-        Authorization auth = new Authorization();
-        auth.setUserId(createdUser.getId());
-        auth.setEmail(createdUser.getEmail());
-        auth.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        
-        authRepository.save(auth);
+        try {
+            Authorization auth = new Authorization();
+            auth.setUserId(createdUser.getId());
+            auth.setEmail(createdUser.getEmail());
+            auth.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+            
+            authRepository.save(auth);
+        } catch (Exception e) {
+            try {
+                userClient.deleteUser(createdUser.getId());
+            } catch (Exception rollbackEx) {
+                //In real system, we might use a retry mechanism or a dead letter queue here
+            }
+            throw new RuntimeException("Failed to complete signup. Cleaned up partial registration. Please try again.");
+        }
     }
 
     public AuthDTO login(LoginRequest request) {
