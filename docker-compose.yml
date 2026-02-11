@@ -103,6 +103,7 @@ services:
       SERVER_PORT: 8087
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       USER_SERVICE_URL: http://user-service:8086
+      EMAIL_CONFIRMATION_BASE_URL: http://localhost:8080/email-confirmations/confirm
     depends_on:
       - postgres
       - kafka
@@ -110,9 +111,9 @@ services:
     networks:
       - paydaybank-network
 
-  email_confirmation-service:
+  email-confirmation-service:
     build: ./email_confirmation-service
-    container_name: email_confirmation-service
+    container_name: email-confirmation-service
     environment:
       JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
@@ -120,6 +121,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       AUTH_SERVICE_URL: http://auth-service:8085
       SERVER_PORT: 8088
+    ports:
+      - "8088:8088"
     depends_on:
       - postgres
     networks:
@@ -177,6 +180,7 @@ services:
       TRANSACTION_SERVICE_URL: http://transaction-service:8090
       SERVER_PORT: 8080
       JWT_SECRET: ${JWT_SECRET}
+      EMAIL_CONFIRMATION_SERVICE_URL: http://email-confirmation-service:8088
     depends_on:
       - auth-service
       - user-service
