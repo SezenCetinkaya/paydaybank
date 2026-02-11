@@ -26,6 +26,11 @@ public class TransactionService {
     public void createOpeningTransaction(UUID accountId) {
         log.info("Creating opening transaction for accountId: {}", accountId);
 
+        if (transactionRepository.existsByAccountIdAndType(accountId, TransactionType.OPENING)) {
+            log.warn("Opening transaction already exists for accountId: {}. Skipping creation.", accountId);
+            return;
+        }
+
         Transaction transaction = Transaction.builder()
                 .accountId(accountId)
                 .amount(BigDecimal.ZERO)
